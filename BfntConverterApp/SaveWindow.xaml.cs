@@ -151,9 +151,9 @@ namespace BfntConverterApp
         private string? SelectFile()
         {
             var index = (int)_viewModel.SelectedFormat;
-            var extension = new[] { ".bft", ".png", ".webp" }[index];
+            var extension = new[] { ".bft", ".png", ".webp", ".pi" }[index];
             var filter = new[]
-                { "BFNT (*.BFT; *.FNT)|*.BFT;*.FNT", "PNG (*.png)|*.png", "WebP (*.webp)|*.webp" }[index];
+                { "BFNT (*.BFT; *.FNT)|*.BFT;*.FNT", "PIXEL IMAGE (*.pi)|*.pi", "PNG (*.png)|*.png", "WebP (*.webp)|*.webp" }[index];
 
             var saveFileDialog = new SaveFileDialog
             {
@@ -169,7 +169,7 @@ namespace BfntConverterApp
 
         private static string? SelectFolder()
         {
-            var dialog = new CommonOpenFileDialog("フォルダーの選択")
+            var dialog = new CommonOpenFileDialog("选择输出文件夹")
             {
                 IsFolderPicker = true
             };

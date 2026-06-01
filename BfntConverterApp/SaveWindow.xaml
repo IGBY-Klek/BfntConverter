@@ -76,7 +76,7 @@
                     Width="Auto"
                     Margin="0,16,0,0"
                     HorizontalAlignment="Left"
-                    Content="Xdots x Ydots に分割して出力"
+                    Content="使用Xdots x Ydots进行分割 "
                     Cursor="Hand"
                     IsChecked="{Binding IsDividedOutput}" />
 
@@ -122,7 +122,7 @@
                         Margin="10,0,0,0"
                         Orientation="Horizontal">
                         <wpfui:Icon Margin="0,0,6,0" Glyph="Warning20" />
-                        <TextBlock VerticalAlignment="Center" Text="割り切れません" />
+                        <TextBlock VerticalAlignment="Center" Text="无法分割" />
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -323,7 +323,7 @@
                         <CheckBox
                             Width="Auto"
                             Margin="0,0,0,8"
-                            Content="パレットを含める"
+                            Content="包含调色板"
                             IsChecked="{Binding IncludesPalette}" />
                     </StackPanel>
                 </Grid>
@@ -365,7 +365,7 @@
                         Margin="4,0,4,0"
                         Appearance="Secondary"
                         Click="CompleteButton_OnClick"
-                        Content="完了" />
+                        Content="完成" />
 
                     <wpfui:Button
                         x:Name="CancelButton"
@@ -373,7 +373,7 @@
                         Margin="4,0,0,0"
                         Appearance="Secondary"
                         Click="CancelButton_OnClick"
-                        Content="キャンセル"
+                        Content="取消"
                         IsCancel="True" />
                 </Grid>
             </Border>
