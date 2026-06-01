@@ -1,10 +1,12 @@
 # BFNT Converter
 
-PC-9801 時代に使われていた BFNT、BFNT+フォーマット（Rev.1.6）のファイルを画像として表示・変換できるソフトウェアです。Windows 11, .NET 6 で動作確認。
+这款软件可以用来观览PC-98的BFNT文件、PI文件等。
 
-[BFNT ファイルを表示・変換できる BFNT Converter 公開 – プログラミング生放送](https://pronama.jp/2022/03/05/bfnt-converter/)
+Copyright (c) 2022 jz5
 
-[Download](https://github.com/jz5/BfntConverter/releases)
+改版由KLEk提供
+
+作者原版的下载链接：[Download](https://github.com/jz5/BfntConverter/releases)
 
 ![bfntconverter1](https://user-images.githubusercontent.com/435620/156856143-f8b44c54-bc79-423c-926f-63bd6b2b31bc.png)
 ![bfntconverter2](https://user-images.githubusercontent.com/435620/156856144-9f4f626b-f0fe-420f-8b3b-e06d2ec4942d.png)
