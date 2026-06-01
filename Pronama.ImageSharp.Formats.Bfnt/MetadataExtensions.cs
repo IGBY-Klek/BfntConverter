@@ -10,5 +10,12 @@ namespace Pronama.ImageSharp.Formats.Bfnt
         /// <param name="metadata">The metadata this method extends.</param>
         /// <returns>The <see cref="BfntMetadata"/>.</returns>
         public static BfntMetadata GetBfntMetadata(this ImageMetadata metadata) => metadata.GetFormatMetadata(BfntFormat.Instance);
+
+        /// <summary>
+        /// Gets the PI format specific metadata for the image.
+        /// </summary>
+        /// <param name="metadata">The metadata this method extends.</param>
+        /// <returns>The <see cref="PiMetadata"/>.</returns>
+        public static PiMetadata GetPiMetadata(this ImageMetadata metadata) => metadata.GetFormatMetadata(PiFormat.Instance);
     }
 }

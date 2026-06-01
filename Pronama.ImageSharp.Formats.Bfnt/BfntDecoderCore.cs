@@ -137,6 +137,7 @@ namespace Pronama.ImageSharp.Formats.Bfnt
                         var buf = br.ReadBytes(3);
                         var no = buf[0] << 16 | buf[1] << 8 | buf[2];
                         _transparentPalettes.Add(no);
+                        _bfntMetadata.TransparentPallets.Add(no);
 
                     }
                     else if (id == 0x3f)
@@ -176,6 +177,10 @@ namespace Pronama.ImageSharp.Formats.Bfnt
             var rowCount = rowEnd - rowStart + 1;
 
             var tableImage = new Image<TPixel>(Configuration, _bfntMetadata.Xdots * columns, _bfntMetadata.Ydots * rowCount);
+            var imageBfntMetadata = tableImage.Metadata.GetBfntMetadata();
+            imageBfntMetadata.CopyFrom(_bfntMetadata);
+            _bfntMetadata = imageBfntMetadata;
+            Metadata = tableImage.Metadata;
 
 
             //
@@ -188,6 +193,8 @@ namespace Pronama.ImageSharp.Formats.Bfnt
                 {
                     var brg = br.ReadBytes(3);
                     palettes.Add(brg);
+                    // BFNT palette entries are stored as B, R, G bytes.
+                    _bfntMetadata.Palette.Add(new Rgb24(brg[1], brg[2], brg[0]));
                 }
             }
             else

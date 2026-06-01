@@ -3,7 +3,7 @@
 namespace Pronama.ImageSharp.Formats.Bfnt
 {
     /// <summary>
-    /// Registers the image encoders, decoders and mime type detectors for the bfnt format.
+    /// Registers the image encoders, decoders and mime type detectors for the bfnt and pi formats.
     /// </summary>
     public sealed class BfntConfigurationModule : IConfigurationModule
     {
@@ -11,7 +11,9 @@ namespace Pronama.ImageSharp.Formats.Bfnt
         {
             //configuration.ImageFormatsManager.SetEncoder(BfntFormat.Instance, new PngEncoder());
             configuration.ImageFormatsManager.SetDecoder(BfntFormat.Instance, new BfntDecoder());
+            configuration.ImageFormatsManager.SetDecoder(PiFormat.Instance, new PiDecoder());
             configuration.ImageFormatsManager.AddImageFormatDetector(new BfntImageFormatDetector());
+            configuration.ImageFormatsManager.AddImageFormatDetector(new PiImageFormatDetector());
         }
     }
 }

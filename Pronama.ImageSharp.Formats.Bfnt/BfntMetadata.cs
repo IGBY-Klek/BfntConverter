@@ -1,4 +1,5 @@
 ﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pronama.ImageSharp.Formats.Bfnt
 {
@@ -9,6 +10,13 @@ namespace Pronama.ImageSharp.Formats.Bfnt
         }
 
         public BfntMetadata(BfntMetadata other)
+        {
+            CopyFrom(other);
+        }
+
+        public IDeepCloneable DeepClone() => new BfntMetadata(this);
+
+        public void CopyFrom(BfntMetadata other)
         {
             Col = other.Col;
             Ver = other.Ver;
@@ -22,9 +30,9 @@ namespace Pronama.ImageSharp.Formats.Bfnt
             ExtFontName = other.ExtFontName;
             Author = other.Author;
             Comment = other.Comment;
+            TransparentPallets = new HashSet<int>(other.TransparentPallets);
+            Palette = new List<Rgb24>(other.Palette);
         }
-
-        public IDeepCloneable DeepClone() => new BfntMetadata(this);
 
 
         #region 基本ヘッダ
@@ -58,6 +66,11 @@ namespace Pronama.ImageSharp.Formats.Bfnt
         /// ID = x10: 透明色パレット指定(3バイト固定)
         /// </summary>
         public HashSet<int> TransparentPallets = new();
+
+        /// <summary>
+        /// Palette colors decoded from files that include palette data.
+        /// </summary>
+        public List<Rgb24> Palette { get; set; } = new();
 
         /// <summary>
         /// ID = x3f: 拡張フォント名(可変長)
