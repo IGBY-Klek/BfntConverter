@@ -195,6 +195,12 @@ namespace BfntConverterApp
                         _bfntMetadata = null;
                         _viewModel.StatusText = $"PI   {imageInfo.Width}x{imageInfo.Height}   {piMetadata.ColorCount:#,0}色 ({piMetadata.NormalizedBitDepth}bit)   {piMetadata.CompressorModel}";
                     }
+                    else if (formatName == "MPN")
+                    {
+                        var mpnMetadata = imageInfo.Metadata.GetMpnMetadata();
+                        _bfntMetadata = null;
+                        _viewModel.StatusText = $"MPN   {imageInfo.Width}x{imageInfo.Height}   {mpnMetadata.Palette.Count:#,0}色 (4bit)   tiles={mpnMetadata.TileCount:#,0}";
+                    }
                     else
                     {
                         _bfntMetadata = null;
@@ -286,6 +292,10 @@ namespace BfntConverterApp
                 _bfntMetadata = image.Metadata.GetBfntMetadata();
                 SetPaletteViewer(_bfntMetadata.Palette, _bfntMetadata.TransparentPallets);
             }
+            else if (formatName == "MPN")
+            {
+                SetPaletteViewer(image.Metadata.GetMpnMetadata().Palette);
+            }
             else
             {
                 ClearPaletteViewer();
@@ -338,7 +348,7 @@ namespace BfntConverterApp
         {
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "BFNT (*.BFT; *.FNT)|*.BFT;*.FNT|PIXEL IMAGE (*.PI)|*.pi|CDG/CD2(ZUN) (*.cdg; *.cd2)|*.cdg;*.cd2|图像文件 (*.png; *.jpg; *.jpeg; *.jpe; *.jfif; *.exif; *.bmp; *.dib; *.rle; *.tiff; *.tif; *.gif; *.webp; *.pi)|*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.exif;*.bmp;*.dib;*.rle;*.tiff;*.tif;*.gif;*.webp;*.pi|所有文件 (*.*)|*.*",
+                Filter = "BFNT (*.BFT; *.FNT)|*.BFT;*.FNT|PIXEL IMAGE (*.PI)|*.pi|MPN (*.MPN)|*.mpn|CDG/CD2(ZUN) (*.cdg; *.cd2)|*.cdg;*.cd2|图像文件 (*.png; *.jpg; *.jpeg; *.jpe; *.jfif; *.exif; *.bmp; *.dib; *.rle; *.tiff; *.tif; *.gif; *.webp; *.pi; *.mpn)|*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.exif;*.bmp;*.dib;*.rle;*.tiff;*.tif;*.gif;*.webp;*.pi;*.mpn|所有文件 (*.*)|*.*",
                 CheckFileExists = true,
                 Multiselect = false
             };
