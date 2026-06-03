@@ -14,7 +14,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace BfntConverterApp.Rikako
 {
-    internal partial class RikakoTilemapViewerWindow : Window
+    public partial class RikakoTilemapViewerWindow : Window
     {
         private const int TilesPerRow = 24;
         private const int TilesPerSection = 5;
