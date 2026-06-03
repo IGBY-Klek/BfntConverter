@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using DrawingBitmap = System.Drawing.Bitmap;
-using DrawingGraphics = System.Drawing.Graphics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -86,7 +84,7 @@ namespace BfntConverterApp
         private string? _filePath;
         private BfntMetadata? _bfntMetadata;
         private PaletteWindow? _paletteWindow;
-        private RikakoTilemapViewerForm? _tilemapViewerWindow;
+        private RikakoTilemapViewerWindow? _tilemapViewerWindow;
 
         public MainWindow()
         {
@@ -347,8 +345,7 @@ namespace BfntConverterApp
             _viewModel.HasMpnTileSheet = true;
             if (_tilemapViewerWindow != null)
             {
-                using var tileSheet = CreateBitmap(image);
-                _tilemapViewerWindow.SetTileSheet(tileSheet);
+                _tilemapViewerWindow.SetTileSheet(image);
             }
         }
 
@@ -376,22 +373,12 @@ namespace BfntConverterApp
                 return;
             }
 
-            using var tileSheet = CreateBitmap(_image);
-            _tilemapViewerWindow = new RikakoTilemapViewerForm(tileSheet);
+            _tilemapViewerWindow = new RikakoTilemapViewerWindow(_image)
+            {
+                Owner = this
+            };
             _tilemapViewerWindow.Closed += (_, _) => _tilemapViewerWindow = null;
             _tilemapViewerWindow.Show();
-        }
-
-        private static DrawingBitmap CreateBitmap(Image<Bgra32> image)
-        {
-            var bitmap = new DrawingBitmap(image.Width, image.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            using var graphics = DrawingGraphics.FromImage(bitmap);
-            using var stream = new System.IO.MemoryStream();
-            image.SaveAsBmp(stream);
-            stream.Position = 0;
-            using var decoded = new DrawingBitmap(stream);
-            graphics.DrawImageUnscaled(decoded, 0, 0);
-            return bitmap;
         }
 
         private void ShowPaletteViewer()
