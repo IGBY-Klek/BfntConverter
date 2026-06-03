@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
@@ -19,6 +18,7 @@ namespace BfntConverterApp.Rikako
         private const int TilesPerRow = 24;
         private const int TilesPerSection = 5;
         private const int TileSize = 16;
+        private const int BytesPerPixel = 4;
 
         private readonly Dictionary<string, (int X, int Y)> tilePositions = new();
         private readonly List<string[]> parsedRows = new();
@@ -116,62 +116,77 @@ namespace BfntConverterApp.Rikako
         {
             if (sourceImage == null || parsedRows.Count == 0) return;
 
-            using var resultImage = new Image<Bgra32>(TilesPerRow * TileSize, TilesPerSection * TileSize);
-            FillImage(resultImage, new Bgra32(255, 255, 255, 255));
-            DrawCurrentSection(resultImage);
+            var sourcePixels = new byte[sourceImage.Width * sourceImage.Height * BytesPerPixel];
+            sourceImage.CopyPixelDataTo(sourcePixels);
 
-            var bitmapSource = CreateBitmapSource(resultImage);
+            var previewWidth = TilesPerRow * TileSize;
+            var previewHeight = TilesPerSection * TileSize;
+            var previewPixels = CreateWhitePixelBuffer(previewWidth, previewHeight);
+            DrawCurrentSection(sourcePixels, sourceImage.Width, previewPixels, previewWidth);
+
+            var bitmapSource = CreateBitmapSource(previewPixels, previewWidth, previewHeight);
             PreviewZoomBorder.Reset();
             PreviewImage.Source = bitmapSource;
             PreviewCanvas.Width = bitmapSource.Width;
             PreviewCanvas.Height = bitmapSource.Height;
         }
 
-        private void DrawCurrentSection(Image<Bgra32> resultImage)
+        private void DrawCurrentSection(
+            byte[] sourcePixels,
+            int sourceWidth,
+            byte[] previewPixels,
+            int previewWidth)
         {
-            if (sourceImage == null) return;
-
             var startRow = currentSection * TilesPerSection;
             var endRow = Math.Min(startRow + TilesPerSection, parsedRows.Count);
 
-            sourceImage.ProcessPixelRows(sourceAccessor =>
+            for (var rowIndex = startRow; rowIndex < endRow; rowIndex++)
             {
-                resultImage.ProcessPixelRows(resultAccessor =>
+                var hexValues = parsedRows[rowIndex];
+                for (var i = 0; i < Math.Min(hexValues.Length, TilesPerRow); i++)
                 {
-                    for (var rowIndex = startRow; rowIndex < endRow; rowIndex++)
+                    var hex = hexValues[i].Trim().ToUpperInvariant().PadLeft(2, '0');
+                    if (!tilePositions.TryGetValue(hex, out var sourcePoint))
                     {
-                        var hexValues = parsedRows[rowIndex];
-                        for (var i = 0; i < Math.Min(hexValues.Length, TilesPerRow); i++)
-                        {
-                            var hex = hexValues[i].Trim().ToUpperInvariant().PadLeft(2, '0');
-                            if (!tilePositions.TryGetValue(hex, out var sourcePoint))
-                            {
-                                continue;
-                            }
-
-                            var destinationX = i * TileSize;
-                            var destinationY = (rowIndex - startRow) * TileSize;
-                            for (var y = 0; y < TileSize; y++)
-                            {
-                                var sourceRow = sourceAccessor.GetRowSpan(sourcePoint.Y + y).Slice(sourcePoint.X, TileSize);
-                                var resultRow = resultAccessor.GetRowSpan(destinationY + y).Slice(destinationX, TileSize);
-                                sourceRow.CopyTo(resultRow);
-                            }
-                        }
+                        continue;
                     }
-                });
-            });
+
+                    CopyTile(
+                        sourcePixels,
+                        sourceWidth,
+                        sourcePoint.X,
+                        sourcePoint.Y,
+                        previewPixels,
+                        previewWidth,
+                        i * TileSize,
+                        (rowIndex - startRow) * TileSize);
+                }
+            }
         }
 
-        private static void FillImage(Image<Bgra32> image, Bgra32 color)
+        private static void CopyTile(
+            byte[] sourcePixels,
+            int sourceWidth,
+            int sourceX,
+            int sourceY,
+            byte[] previewPixels,
+            int previewWidth,
+            int destinationX,
+            int destinationY)
         {
-            image.ProcessPixelRows(accessor =>
+            for (var y = 0; y < TileSize; y++)
             {
-                for (var y = 0; y < image.Height; y++)
-                {
-                    accessor.GetRowSpan(y).Fill(color);
-                }
-            });
+                var sourceOffset = (((sourceY + y) * sourceWidth) + sourceX) * BytesPerPixel;
+                var destinationOffset = (((destinationY + y) * previewWidth) + destinationX) * BytesPerPixel;
+                Buffer.BlockCopy(sourcePixels, sourceOffset, previewPixels, destinationOffset, TileSize * BytesPerPixel);
+            }
+        }
+
+        private static byte[] CreateWhitePixelBuffer(int width, int height)
+        {
+            var pixels = new byte[width * height * BytesPerPixel];
+            Array.Fill<byte>(pixels, 255);
+            return pixels;
         }
 
         private void ClearPreview()
@@ -278,19 +293,17 @@ namespace BfntConverterApp.Rikako
             base.OnClosed(e);
         }
 
-        private static BitmapSource CreateBitmapSource(Image<Bgra32> image)
+        private static BitmapSource CreateBitmapSource(byte[] pixelBytes, int width, int height)
         {
-            var pixelBytes = new byte[image.Width * image.Height * Unsafe.SizeOf<Bgra32>()];
-            image.CopyPixelDataTo(pixelBytes);
             var bitmapSource = BitmapSource.Create(
-                image.Width,
-                image.Height,
+                width,
+                height,
                 96,
                 96,
                 PixelFormats.Bgra32,
                 null,
                 pixelBytes,
-                image.Width * 4);
+                width * BytesPerPixel);
             bitmapSource.Freeze();
             return bitmapSource;
         }
