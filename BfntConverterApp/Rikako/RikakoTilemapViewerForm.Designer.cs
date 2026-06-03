@@ -1,25 +1,23 @@
-﻿using System.Reflection;
+using System.Drawing;
+using System.Windows.Forms;
 
-namespace MapEditHelper
+namespace BfntConverterApp.Rikako
 {
-    partial class Mainform
+    internal partial class RikakoTilemapViewerForm
     {
-        private System.ComponentModel.IContainer components = null;
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Windows Form Designer generated code
+        private RichTextBox richTextBox1 = null!;
+        private TableLayoutPanel tableLayoutPanel1 = null!;
+        private Panel panel1 = null!;
+        private PictureBox pictureBox2 = null!;
+        private Button btnPrevSection = null!;
+        private Button btnNextSection = null!;
+        private Label lblSectionNumber = null!;
+        private MenuStrip menuStrip1 = null!;
+        private ToolStripMenuItem fileMenu = null!;
+        private ToolStripMenuItem helpMenu = null!;
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Mainform));
             richTextBox1 = new RichTextBox();
             tableLayoutPanel1 = new TableLayoutPanel();
             pictureBox2 = new PictureBox();
@@ -39,6 +37,7 @@ namespace MapEditHelper
             // richTextBox1
             // 
             richTextBox1.AcceptsTab = true;
+            richTextBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             richTextBox1.Font = new Font("Consolas", 10F);
             richTextBox1.Location = new Point(16, 16);
             richTextBox1.Margin = new Padding(2);
@@ -55,14 +54,13 @@ namespace MapEditHelper
             tableLayoutPanel1.Controls.Add(pictureBox2, 0, 0);
             tableLayoutPanel1.Controls.Add(panel1, 0, 1);
             tableLayoutPanel1.Dock = DockStyle.Fill;
-            tableLayoutPanel1.Location = new Point(0, 0);
+            tableLayoutPanel1.Location = new Point(0, 28);
             tableLayoutPanel1.Margin = new Padding(2);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(1010, 602);
+            tableLayoutPanel1.Size = new Size(1010, 574);
             tableLayoutPanel1.TabIndex = 6;
             // 
             // pictureBox2
@@ -72,11 +70,10 @@ namespace MapEditHelper
             pictureBox2.Location = new Point(2, 2);
             pictureBox2.Margin = new Padding(2);
             pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(1006, 357);
+            pictureBox2.Size = new Size(1006, 340);
             pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
             pictureBox2.TabIndex = 2;
             pictureBox2.TabStop = false;
-            pictureBox2.Click += pictureBox2_Click;
             // 
             // panel1
             // 
@@ -85,15 +82,16 @@ namespace MapEditHelper
             panel1.Controls.Add(lblSectionNumber);
             panel1.Controls.Add(btnNextSection);
             panel1.Dock = DockStyle.Fill;
-            panel1.Location = new Point(2, 363);
+            panel1.Location = new Point(2, 346);
             panel1.Margin = new Padding(2);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1006, 237);
+            panel1.Size = new Size(1006, 228);
             panel1.TabIndex = 0;
             // 
             // btnPrevSection
             // 
-            btnPrevSection.Location = new Point(16, 197);
+            btnPrevSection.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnPrevSection.Location = new Point(16, 194);
             btnPrevSection.Name = "btnPrevSection";
             btnPrevSection.Size = new Size(90, 27);
             btnPrevSection.TabIndex = 5;
@@ -103,16 +101,18 @@ namespace MapEditHelper
             // 
             // lblSectionNumber
             // 
-            lblSectionNumber.Location = new Point(442, 200);
+            lblSectionNumber.Anchor = AnchorStyles.Bottom;
+            lblSectionNumber.Location = new Point(442, 197);
             lblSectionNumber.Name = "lblSectionNumber";
-            lblSectionNumber.Size = new Size(100, 20);
+            lblSectionNumber.Size = new Size(120, 20);
             lblSectionNumber.TabIndex = 6;
             lblSectionNumber.Text = "Section: 0/0";
             lblSectionNumber.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // btnNextSection
             // 
-            btnNextSection.Location = new Point(881, 197);
+            btnNextSection.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnNextSection.Location = new Point(881, 194);
             btnNextSection.Name = "btnNextSection";
             btnNextSection.Size = new Size(90, 27);
             btnNextSection.TabIndex = 7;
@@ -133,36 +133,36 @@ namespace MapEditHelper
             // 
             fileMenu.Name = "fileMenu";
             fileMenu.Size = new Size(46, 24);
-            fileMenu.Text = "&File";
-            fileMenu.DropDownItems.AddRange(new ToolStripItem[] {
-                new ToolStripMenuItem("&Load Tilemap", null, new EventHandler(LoadTilemap_Click)),
-                new ToolStripMenuItem("Load &Map", null, new EventHandler(LoadMap_Click)),
+            fileMenu.Text = "文件(&F)";
+            fileMenu.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                new ToolStripMenuItem("载入地图文本(&M)", null, LoadMap_Click),
                 new ToolStripSeparator(),
-                new ToolStripMenuItem("E&xit", null, new EventHandler(Exit_Click))
+                new ToolStripMenuItem("关闭(&X)", null, Exit_Click)
             });
             // 
             // helpMenu
             // 
             helpMenu.Name = "helpMenu";
-            helpMenu.Size = new Size(55, 24);
-            helpMenu.Text = "&Help";
-            helpMenu.DropDownItems.AddRange(new ToolStripItem[] {
-                new ToolStripMenuItem("&About", null, new EventHandler(About_Click))
+            helpMenu.Size = new Size(69, 24);
+            helpMenu.Text = "帮助(&H)";
+            helpMenu.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                new ToolStripMenuItem("关于(&A)", null, About_Click)
             });
             // 
-            // Mainform
+            // RikakoTilemapViewerForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1010, 602);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(menuStrip1);
-            Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Margin = new Padding(2);
             MinimumSize = new Size(804, 489);
-            Name = "Mainform";
-            Text = "Rikako";
+            Name = "RikakoTilemapViewerForm";
+            Text = "Rikako 地图块查看器";
             tableLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             panel1.ResumeLayout(false);
@@ -171,17 +171,5 @@ namespace MapEditHelper
             ResumeLayout(false);
             PerformLayout();
         }
-
-        #endregion
-
-        private RichTextBox richTextBox1;
-        private TableLayoutPanel tableLayoutPanel1;
-        private Panel panel1;
-        private PictureBox pictureBox2;
-        private Button btnPrevSection;
-        private Button btnNextSection;
-        private Label lblSectionNumber;
-        private ToolStripMenuItem fileMenu;
-        private ToolStripMenuItem helpMenu;
     }
 }

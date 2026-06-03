@@ -1,16 +1,16 @@
 using System.Drawing;
-using System.Windows.Forms;
 using System.Reflection;
+using System.Windows.Forms;
 
-namespace MapEditHelper
+namespace BfntConverterApp.Rikako
 {
-    internal class TilePreviewForm : Form
+    internal class RikakoTilePreviewForm : Form
     {
         private readonly PictureBox pictureBox;
 
-        public TilePreviewForm()
+        public RikakoTilePreviewForm()
         {
-            Text = "Tilemap Preview";
+            Text = "地图块查看器 - 点阵图";
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Width = 480;

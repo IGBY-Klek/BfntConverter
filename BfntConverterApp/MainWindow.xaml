@@ -104,6 +104,13 @@
                         IsEnabled="{Binding HasPalette}"
                         Tag="paletteViewer"
                         ToolTip="仅当当前 BFNT 文件包含调色板数据时可用" />
+                    <MenuItem
+                        Click="MenuItem_OnClick"
+                        Header="地图块查看器"
+                        Icon="{x:Static wpfuiCommon:Icon.DocumentSearch20}"
+                        IsEnabled="{Binding HasMpnTileSheet}"
+                        Tag="tilemapViewer"
+                        ToolTip="仅当当前打开的是 MPN(*.MPN) 点阵图时可用" />
                 </MenuItem>
                 <MenuItem
                     Click="MenuItem_OnClick"
