@@ -10,6 +10,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using BfntConverterApp.Rikako;
 using Pronama.ImageSharp.Formats.Bfnt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Bmp;
@@ -48,6 +49,13 @@ namespace BfntConverterApp
                 set => SetProperty(ref _hasPalette, value);
             }
             private bool _hasPalette;
+
+            public bool HasMpnTileSheet
+            {
+                get => _hasMpnTileSheet;
+                set => SetProperty(ref _hasMpnTileSheet, value);
+            }
+            private bool _hasMpnTileSheet;
         }
 
         internal class PaletteColor
@@ -76,6 +84,7 @@ namespace BfntConverterApp
         private string? _filePath;
         private BfntMetadata? _bfntMetadata;
         private PaletteWindow? _paletteWindow;
+        private RikakoTilemapViewerWindow? _tilemapViewerWindow;
 
         public MainWindow()
         {
@@ -135,6 +144,9 @@ namespace BfntConverterApp
                 case "paletteViewer":
                     ShowPaletteViewer();
                     break;
+                case "tilemapViewer":
+                    ShowTilemapViewer();
+                    break;
             }
         }
 
@@ -156,6 +168,7 @@ namespace BfntConverterApp
             _viewModel.StatusText = "";
             ZoomImage.Source = null;
             ClearPaletteViewer();
+            ClearMpnTileSheet();
 
             try
             {
@@ -215,6 +228,7 @@ namespace BfntConverterApp
                 _image = image;
                 SetImage(image);
                 UpdatePaletteViewer(image, formatName);
+                UpdateMpnTileSheet(image, formatName);
 
                 SetTitle(file);
                 _filePath = file;
@@ -245,6 +259,7 @@ namespace BfntConverterApp
             _image = image;
             SetImage(image);
             SetPaletteViewer(info.Palette);
+            ClearMpnTileSheet();
 
             _bfntMetadata = null;
             _filePath = cdgPath;
@@ -319,6 +334,52 @@ namespace BfntConverterApp
             _viewModel.HasPalette = false;
         }
 
+        private void UpdateMpnTileSheet(Image<Bgra32> image, string? formatName)
+        {
+            if (formatName != "MPN")
+            {
+                ClearMpnTileSheet();
+                return;
+            }
+
+            _viewModel.HasMpnTileSheet = true;
+            if (_tilemapViewerWindow != null)
+            {
+                _tilemapViewerWindow.SetTileSheet(image);
+            }
+        }
+
+        private void ClearMpnTileSheet()
+        {
+            _viewModel.HasMpnTileSheet = false;
+            if (_tilemapViewerWindow != null)
+            {
+                _tilemapViewerWindow.Close();
+                _tilemapViewerWindow = null;
+            }
+        }
+
+        private void ShowTilemapViewer()
+        {
+            if (!_viewModel.HasMpnTileSheet || _image == null)
+            {
+                MessageBox.Show("地图块查看器仅在当前打开的是 MPN(*.MPN) 点阵图时可用。", "地图块查看器", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (_tilemapViewerWindow != null)
+            {
+                _tilemapViewerWindow.Activate();
+                return;
+            }
+
+            _tilemapViewerWindow = new RikakoTilemapViewerWindow(_image)
+            {
+                Owner = this
+            };
+            _tilemapViewerWindow.Closed += (_, _) => _tilemapViewerWindow = null;
+            _tilemapViewerWindow.Show();
+        }
 
         private void ShowPaletteViewer()
         {
@@ -415,6 +476,7 @@ namespace BfntConverterApp
                 _image = image;
                 SetImage(image);
                 ClearPaletteViewer();
+                ClearMpnTileSheet();
 
                 SetTitle();
                 _filePath = null;

@@ -16,6 +16,13 @@
     <Content Include="Assets\icon.ico" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Compile Remove="Rikako\RikakoTilemapViewerForm.cs" />
+    <Compile Remove="Rikako\RikakoTilemapViewerForm.Designer.cs" />
+    <Compile Remove="Rikako\RikakoTilePreviewForm.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
@@ -28,6 +35,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\icon.png" />
+    <Resource Include="Assets\rikako.ico" />
   </ItemGroup>
 
   <ItemGroup>
