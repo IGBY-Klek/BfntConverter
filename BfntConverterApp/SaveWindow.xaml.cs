@@ -26,6 +26,9 @@ namespace BfntConverterApp
             public enum Format
             {
                 BFNT,
+                PI,
+                CDG_CD2,
+                MPTN,
                 PNG,
                 WebP
             }
@@ -33,7 +36,7 @@ namespace BfntConverterApp
             public ViewModel(int width, int height)
             {
                 foreach (Format e in Enum.GetValues(typeof(Format)))
-                    Formats.Add(e, e.ToString());
+                    Formats.Add(e, e == Format.CDG_CD2 ? "CDG/CD2" : e.ToString());
 
                 Width = width;
                 Height = height;
@@ -129,11 +132,13 @@ namespace BfntConverterApp
         private readonly ViewModel _viewModel;
         private readonly Image<Bgra32> _image;
         private readonly string? _filePath;
+        private readonly BfntMetadata? _bfntMetadata;
 
         public SaveWindow(Image<Bgra32> image, string? filePath, BfntMetadata? bfntMetadata)
         {
             _image = image;
             _filePath = filePath;
+            _bfntMetadata = bfntMetadata;
 
             _viewModel = new ViewModel(_image.Width, _image.Height)
             {
@@ -151,9 +156,9 @@ namespace BfntConverterApp
         private string? SelectFile()
         {
             var index = (int)_viewModel.SelectedFormat;
-            var extension = new[] { ".bft", ".png", ".webp", ".pi" }[index];
+            var extension = new[] { ".bft", ".pi", ".cdg", ".mpn", ".png", ".webp" }[index];
             var filter = new[]
-                { "BFNT (*.BFT; *.FNT)|*.BFT;*.FNT", "PIXEL IMAGE (*.pi)|*.pi", "PNG (*.png)|*.png", "WebP (*.webp)|*.webp" }[index];
+                { "BFNT (*.BFT; *.FNT)|*.BFT;*.FNT", "PIXEL IMAGE (*.pi)|*.pi", "CDG/CD2(ZUN) (*.cdg; *.cd2)|*.cdg;*.cd2", "MPTN/MPN (*.mpn)|*.mpn", "PNG (*.png)|*.png", "WebP (*.webp)|*.webp" }[index];
 
             var saveFileDialog = new SaveFileDialog
             {
@@ -192,8 +197,17 @@ namespace BfntConverterApp
                         });
                         break;
 
+                    case ViewModel.Format.PI:
+                        LegacyImageExporters.SavePi(_image, file);
+                        break;
+                    case ViewModel.Format.CDG_CD2:
+                        LegacyImageExporters.SaveCdg(_image, file);
+                        break;
+                    case ViewModel.Format.MPTN:
+                        LegacyImageExporters.SaveMptn(_image, file);
+                        break;
                     case ViewModel.Format.PNG:
-                        _image.SaveAsPng(file);
+                        SavePng(file);
                         break;
                     case ViewModel.Format.WebP:
                         _image.SaveAsWebp(file);
@@ -208,12 +222,48 @@ namespace BfntConverterApp
             }
         }
 
+
+        private void SavePng(string file)
+        {
+            using var image = _image.Clone();
+            ApplyBfntIndexZeroTransparency(image);
+            image.SaveAsPng(file);
+        }
+
+        private void ApplyBfntIndexZeroTransparency(Image<Bgra32> image)
+        {
+            if (_bfntMetadata == null)
+            {
+                return;
+            }
+
+            var transparentColor = _bfntMetadata.Palette.Count > 0
+                ? _bfntMetadata.Palette[0]
+                : new Rgb24(0, 0, 0);
+
+            image.ProcessPixelRows(accessor =>
+            {
+                for (var y = 0; y < accessor.Height; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (var x = 0; x < row.Length; x++)
+                    {
+                        if (row[x].R == transparentColor.R &&
+                            row[x].G == transparentColor.G &&
+                            row[x].B == transparentColor.B)
+                        {
+                            row[x].A = 0;
+                        }
+                    }
+                }
+            });
+        }
+
         private void SaveImages(string folder)
         {
             try
             {
-                var index = (int)_viewModel.SelectedFormat - 1;
-                var extension = new[] { ".png", ".webp" }[index];
+                var extension = _viewModel.SelectedFormat == ViewModel.Format.WebP ? ".webp" : ".png";
 
                 IImageEncoder encoder;
                 switch (_viewModel.SelectedFormat)
@@ -259,6 +309,11 @@ namespace BfntConverterApp
                             }
                         }
                     });
+                    if (_viewModel.SelectedFormat == ViewModel.Format.PNG)
+                    {
+                        ApplyBfntIndexZeroTransparency(image);
+                    }
+
                     image.Save(System.IO.Path.Combine(folder, $"{code}{extension}"), encoder);
                 }
             }
@@ -282,7 +337,7 @@ namespace BfntConverterApp
 
         private void Save(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
         {
-            if (_viewModel.SelectedFormat != ViewModel.Format.BFNT && _viewModel.IsDividedOutput)
+            if ((_viewModel.SelectedFormat == ViewModel.Format.PNG || _viewModel.SelectedFormat == ViewModel.Format.WebP) && _viewModel.IsDividedOutput)
             {
                 var folder = SelectFolder();
                 if (folder != null)
@@ -299,8 +354,9 @@ namespace BfntConverterApp
         private void CanSave(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = _viewModel.SelectedFormat == ViewModel.Format.BFNT && !_viewModel.Indivisible ||
-                 _viewModel.SelectedFormat != ViewModel.Format.BFNT && _viewModel.Indivisible && !_viewModel.IsDividedOutput ||
-                 _viewModel.SelectedFormat != ViewModel.Format.BFNT && !_viewModel.Indivisible;
+                 (_viewModel.SelectedFormat == ViewModel.Format.PNG || _viewModel.SelectedFormat == ViewModel.Format.WebP) && _viewModel.Indivisible && !_viewModel.IsDividedOutput ||
+                 (_viewModel.SelectedFormat == ViewModel.Format.PNG || _viewModel.SelectedFormat == ViewModel.Format.WebP) && !_viewModel.Indivisible ||
+                 _viewModel.SelectedFormat is ViewModel.Format.PI or ViewModel.Format.CDG_CD2 or ViewModel.Format.MPTN;
         }
     }
 }
