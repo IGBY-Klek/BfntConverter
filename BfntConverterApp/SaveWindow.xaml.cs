@@ -132,11 +132,13 @@ namespace BfntConverterApp
         private readonly ViewModel _viewModel;
         private readonly Image<Bgra32> _image;
         private readonly string? _filePath;
+        private readonly BfntMetadata? _bfntMetadata;
 
         public SaveWindow(Image<Bgra32> image, string? filePath, BfntMetadata? bfntMetadata)
         {
             _image = image;
             _filePath = filePath;
+            _bfntMetadata = bfntMetadata;
 
             _viewModel = new ViewModel(_image.Width, _image.Height)
             {
@@ -205,7 +207,7 @@ namespace BfntConverterApp
                         LegacyImageExporters.SaveMptn(_image, file);
                         break;
                     case ViewModel.Format.PNG:
-                        _image.SaveAsPng(file);
+                        SavePng(file);
                         break;
                     case ViewModel.Format.WebP:
                         _image.SaveAsWebp(file);
@@ -218,6 +220,43 @@ namespace BfntConverterApp
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+
+        private void SavePng(string file)
+        {
+            using var image = _image.Clone();
+            ApplyBfntIndexZeroTransparency(image);
+            image.SaveAsPng(file);
+        }
+
+        private void ApplyBfntIndexZeroTransparency(Image<Bgra32> image)
+        {
+            if (_bfntMetadata == null)
+            {
+                return;
+            }
+
+            var transparentColor = _bfntMetadata.Palette.Count > 0
+                ? _bfntMetadata.Palette[0]
+                : new Rgb24(0, 0, 0);
+
+            image.ProcessPixelRows(accessor =>
+            {
+                for (var y = 0; y < accessor.Height; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (var x = 0; x < row.Length; x++)
+                    {
+                        if (row[x].R == transparentColor.R &&
+                            row[x].G == transparentColor.G &&
+                            row[x].B == transparentColor.B)
+                        {
+                            row[x].A = 0;
+                        }
+                    }
+                }
+            });
         }
 
         private void SaveImages(string folder)
@@ -270,6 +309,11 @@ namespace BfntConverterApp
                             }
                         }
                     });
+                    if (_viewModel.SelectedFormat == ViewModel.Format.PNG)
+                    {
+                        ApplyBfntIndexZeroTransparency(image);
+                    }
+
                     image.Save(System.IO.Path.Combine(folder, $"{code}{extension}"), encoder);
                 }
             }
